@@ -86,7 +86,7 @@ def check_version_number():
         .decode("UTF-8")
         .replace("\r\n", "")
     )
-    #
+    # If we have a firmware file on the usb drive use avrdude to update the radio
     if firmware_file:
         logger.info("Update needed")
         output = subprocess.run(
@@ -109,12 +109,15 @@ def check_version_number():
             capture_output=True,
             text=True,
         )
+        # Check the output from subprocess for errors
+        # Delete the file from the usb drive so we're not constantly updating the device.
         logger.info(output.stdout)
         logger.error(output.stderr)
         firmware_file.unlink()
 
 
 for port in PORT_LIST:
+    # Check for a serial port that isn't the standard Pi serial device.
     if port.manufacturer == "FTDI":
         ser.baudrate = BAUD_RATE
         ser.port = port.device
@@ -124,15 +127,19 @@ for port in PORT_LIST:
         sleep(2)
 
 
+# This calls the updater
 check_version_number()
 sleep(2)
+# Sets the mode based on the file on the Flash Drive
 set_mode(mode)
 
 while True:
     try:
+        # If we're the master constantly check the time left in the playlist
         if mode == b"MST\r\n":
             check_status()
         if ser.in_waiting:
+            # Look at serial from the hardware and Parse it.
             command = ser.read_all().decode("utf-8").replace("\r\n", "")
             logger.info(command)
             if command == "SYNC" and mode == b"SLV\r\n":
