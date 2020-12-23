@@ -1,0 +1,28 @@
+{
+    "name": "play",
+    "version": 3,
+    "repeat": 0,
+    "loopCount": 0,
+    "desc": "",
+    "random": 0,
+    "mainPlaylist": [
+        {
+            "type": "sequence",
+            "enabled": 1,
+            "playOnce": 0,
+            "sequenceName": "Program_1.fseq",
+            "duration": 180
+        },
+        {
+            "type": "sequence",
+            "enabled": 1,
+            "playOnce": 0,
+            "sequenceName": "Program_2.fseq",
+            "duration": 300
+        }
+    ],
+    "playlistInfo": {
+        "total_duration": 480,
+        "total_items": 2
+    }
+}

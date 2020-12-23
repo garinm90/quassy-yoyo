@@ -1,0 +1,120 @@
+---
+- hosts: all
+  remote_user: fpp
+  tasks:
+    - name: Add fpp user to dialout group
+      become: yes
+      user:
+        name: fpp
+        groups: [dialout]
+        append: yes
+
+    - name: Delete primary partition
+      become: yes
+      community.general.parted:
+        device: /dev/sda
+        number: 1
+        state: absent
+
+    - name: Create a new Fat32 primary partition
+      become: yes
+      community.general.parted:
+        device: /dev/sda
+        number: 1
+        state: present
+        fs_type: fat32
+
+    - name: Create a vfat filesystem on /dev/sda1
+      become: yes
+      community.general.filesystem:
+        fstype: vfat
+        dev: /dev/sda1
+
+    - name: Create a mount directory
+      become: yes
+      file:
+        path: /media/usb/
+        state: directory
+        mode: "0777"
+
+    - name: Mount DVD read-only
+      become: yes
+      ansible.posix.mount:
+        path: /media/usb/
+        src: /dev/sda1
+        fstype: vfat
+        opts: rw,auto,sync,uid=500,gid=500
+        state: mounted
+    # # - name: Download usbmount .24
+    #   get_url:
+    #     url: https://github.com/nicokaiser/usbmount/releases/download/0.0.24/usbmount_0.0.24_all.deb
+    #     dest: /home/fpp/
+    # - name: Install usbmount@.24
+    #   become: yes
+    #   apt:
+    #     deb: /home/fpp/usbmount_0.0.24_all.deb
+    # - name: Fix build-depends
+    #   become: yes
+    #   apt:
+    #     state: build-dep
+    # - name: Copy usbmount.conf file
+    #   become: yes
+    #   copy:
+    #     src: /home/max/playbook/usbmount.conf
+    #     dest: /etc/usbmount/usbmount.conf
+    #     owner: root
+    #     group: root
+    - name: Install Python3 Modules
+      become: yes
+      apt:
+        name:
+          - python3-requests
+          - python3-serial
+          - avrdude
+
+    - name: Copy python script to home folder
+      copy:
+        src: /home/max/playbook/main.py
+        dest: /home/fpp/
+        mode: preserve
+
+    - name: Copy Service to run python script
+      become: yes
+      copy:
+        src: /home/max/playbook/mainpy.service
+        dest: /etc/systemd/system/
+
+    - name: Copy sequences
+      copy:
+        src: /home/max/playbook/{{ item }}
+        dest: /home/fpp/media/sequences/
+      with_items:
+        - Program_1.fseq
+        - Program_2.fseq
+
+    - name: Copy schedule
+      copy:
+        src: /home/max/playbook/schedule.json
+        dest: /home/fpp/media/config/
+
+    - name: Copy playlist.cfg
+      copy:
+        src: /home/max/playbook/play.json
+        dest: /home/fpp/media/playlists/
+
+    - name: Copy Firmware and Config
+      become: yes
+      copy:
+        src: /home/max/playbook/{{ item }}
+        dest: /media/usb/
+      with_items:
+        - firmware.hex
+        - playlist.cfg
+        - avrdude.conf
+
+    - name: Make sure python script service is running
+      become: yes
+      systemd:
+        state: started
+        name: mainpy.service
+        enabled: yes

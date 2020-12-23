@@ -1,0 +1,15 @@
+[
+    {
+        "enabled": 1,
+        "playlist": "play",
+        "day": 7,
+        "startTime": "00:00:00",
+        "startTimeOffset": 0,
+        "endTime": "24:00:00",
+        "endTimeOffset": 0,
+        "repeat": 1,
+        "startDate": "2018-01-01",
+        "endDate": "2025-12-31",
+        "stopType": 0
+    }
+]

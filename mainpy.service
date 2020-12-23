@@ -1,0 +1,12 @@
+[Unit]
+Description=Python Script to sync up
+After=network.target
+
+[Service]
+ExecStart=/home/fpp/main.py
+Restart=always
+User=fpp
+
+
+[Install]
+WantedBy=multi-user.target
